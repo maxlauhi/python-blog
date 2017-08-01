@@ -31,3 +31,21 @@ class _DbCtx(threading.local):
 		return self.connection.cursor()
 
 _db_ctx = _DbCtx()
+
+# 自动获取和释放连接
+class _ConnectionCtx(object):
+	def __enter__(self):
+		global _db_ctx
+		self.should_cleanup = False
+		if not _db_ctx.is_init():
+			_db_ctx.init()
+			self.should_cleanup = True
+		return self
+
+	def __exit__(self, exctype, excvalue, traceback):
+		global _db_ctx
+		if self.should_cleanup:
+			_db_ctx.cleanup()
+
+def connection():
+	return _ConnectionCtx
