@@ -20,7 +20,7 @@ class ModelMetaclass(type):
 		mapping = ...
 		primary_key = ...
 		__table__ = cls.__table__
-
+        # 
 		attrs['__mapping__'] = mapping
 		attrs['__primary_key__'] = __primary_key__
 		attrs['__table__'] = __table__
