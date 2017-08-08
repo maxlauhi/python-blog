@@ -27,6 +27,10 @@ class Dict(dict):
     def __setattr__(self, key, value):
         self[key] = value
 
+
+
+
+
 def next_id(t=None):
     '''
     Return next id as 50-char string.
@@ -35,6 +39,8 @@ def next_id(t=None):
         t = time.time()
     return '%015d%s000' % (int(t * 1000), uuid.uuid4().hex)
 
+
+
 def _profiling(start, sql=''):
     t = time.time() - start
     if t > 0.1:
@@ -42,11 +48,19 @@ def _profiling(start, sql=''):
     else:
         logging.info('[PROFILING] [DB] %s: %s' % (t, sql))
 
+
+
 class DBError(Exception):
     pass
 
+
+
+
 class MultiColumnsError(DBError):
     pass
+
+
+
 
 class _LasyConnection(object):
 
@@ -72,6 +86,9 @@ class _LasyConnection(object):
             self.connection = None
             logging.info('close connection <%s>...' % hex(id(connection)))
             connection.close()
+
+
+
 
 class _DbCtx(threading.local):
     '''
@@ -99,11 +116,16 @@ class _DbCtx(threading.local):
         '''
         return self.connection.cursor()
 
+
+
 # thread-local db context:
 _db_ctx = _DbCtx()
 
 # global engine object:
 engine = None
+
+
+
 
 class _Engine(object):
 
@@ -128,6 +150,9 @@ def create_engine(user, password, database, host='127.0.0.1', port=3306, **kw):
     # test connection...
     logging.info('Init mysql engine <%s> ok.' % hex(id(engine)))
 
+
+
+
 class _ConnectionCtx(object):
     '''
     _ConnectionCtx object that can open and close connection context. _ConnectionCtx object can be nested and only the most 
@@ -146,11 +171,15 @@ class _ConnectionCtx(object):
         if self.should_cleanup:
             _db_ctx.cleanup()
 
+
+
 def connection():
     '''
     Return _ConnectionCtx object that can be used by 'with' statement:
     '''
     return _ConnectionCtx()
+
+
 
 def with_connection(func):
     '''
@@ -161,6 +190,9 @@ def with_connection(func):
         with _ConnectionCtx():
             return func(*args, **kw)
     return _wrapper
+
+
+
 
 class _TransactionCtx(object):
     '''
@@ -209,11 +241,15 @@ class _TransactionCtx(object):
         _db_ctx.connection.rollback()
         logging.info('rollback ok.')
 
+
+
 def transaction():
     '''
     Create a transaction object so can use with statement:
     '''
     return _TransactionCtx()
+
+
 
 def with_transaction(func):
     '''
@@ -226,6 +262,8 @@ def with_transaction(func):
             return func(*args, **kw)
         _profiling(_start)
     return _wrapper
+
+
 
 def _select(sql, first, *args):
     ' execute select SQL and return unique result or list results.'
@@ -248,6 +286,8 @@ def _select(sql, first, *args):
         if cursor:
             cursor.close()
 
+
+
 @with_connection
 def select_one(sql, *args):
     '''
@@ -256,6 +296,8 @@ def select_one(sql, *args):
     If multiple results found, the first one returned.
     '''
     return _select(sql, True, *args)
+
+
 
 @with_connection
 def select_int(sql, *args):
@@ -267,12 +309,16 @@ def select_int(sql, *args):
         raise MultiColumnsError('Expect only one column.')
     return d.values()[0]
 
+
+
 @with_connection
 def select(sql, *args):
     '''
     Execute select SQL and return list or empty list if no result.
     '''
     return _select(sql, False, *args)
+
+
 
 @with_connection
 def _update(sql, *args):
@@ -293,6 +339,8 @@ def _update(sql, *args):
         if cursor:
             cursor.close()
 
+
+
 def insert(table, **kw):
     '''
     Execute insert SQL.
@@ -301,11 +349,15 @@ def insert(table, **kw):
     sql = 'insert into `%s` (%s) values (%s)' % (table, ','.join(['`%s`' % col for col in cols]), ','.join(['?' for i in range(len(cols))]))
     return _update(sql, *args)
 
+
+
 def update(sql, *args):
     '''
     Execute update SQL.
     '''
     return _update(sql, *args)
+
+
 
 if __name__=='__main__':
     logging.basicConfig(level=logging.DEBUG)
