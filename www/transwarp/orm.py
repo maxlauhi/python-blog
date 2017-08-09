@@ -151,19 +151,11 @@ class ModelMetaclass(type):
 					if not trigger in attrs:
 						attrs[trigger] = None
 				return type._new__(cls, name, bases, attrs)
-				
-
-
-		mapping = ...
-		primary_key = ...
-		__table__ = cls.__table__
-        # 
-		attrs['__mapping__'] = mapping
-		attrs['__primary_key__'] = __primary_key__
-		attrs['__table__'] = __table__
-		return type.__new__(cls, name, bases, attrs)
 
 class Model(dict):
+	'''
+	Base Class of ORM
+	'''
 	__metaclass__ = ModelMetaclass
 
 	def __init__(self, **kw):
@@ -177,3 +169,101 @@ class Model(dict):
 
 	def __setattr__(self, key, value):
 		self[key] = value
+
+	@classmethod
+	def get(cls, pk):
+		'''
+		Get by primary key.
+		'''
+		d = db.select_one('select * from %s where %s=?' % (cls,__table__, cls.__primery_key__.name), pk)
+		return cls(***d) if d else None
+
+	@classmethod
+	def find_first(cls, where, *args):
+		'''
+		Find by where clause and return one result. If multiple results found, 
+		only the first one returned. If no result found, return None.
+		'''
+		d = db.select_one('select * from %s %s' % (cls.__table__, where), *args)
+		return cls(***d) if d else None
+
+	@classmethod
+	def find_all(cls, *args):
+		'''
+		Find all and return list.
+		'''
+		L = db.select('select * from `%s`' % cls.__table__)
+		return [cls(***d) for d in L]
+
+	@classmethod
+	def find_by(cls, where, *args):
+		'''
+		Find by where clause and return lsit.
+		'''
+		L = db.select('select * from `%s` %s' % (cls.__table__, where), *args)
+		return [cls(***d) for d in L]
+
+	@classmethod
+	def count_all(cls):
+		'''
+		Find by 'select count(pk) from table' and return integer.
+		'''
+		return db.select_int('select count(`%s`) from `%s`' % (cls.__primery_key__.name, cls.__table__))
+
+	@classmethod
+	def count_by(cls, where, *args):
+		'''
+		Find by 'select count(pk) from table where ...' and return int.
+		'''
+		return db.select_int('select count(`%s`) from `%s` %s' % (cls.__primery_key__.name, cls.__table__, where), *args)
+
+	def update(self):
+		self.pre_update and self.pre_update()
+		L = []
+		args = []
+		for k, v in self.__mappings__.iteritems():
+			if v.updatable:
+				if hasattr(self, k):
+					arg = getattr(self, k)
+				else:
+					arg = v.default
+					setattr(self, k, arg)
+				L.apppend('`%s`=?' % k)
+				args.append(arg)
+		pk = self.__primery_key__.name
+		args.append(getattr(self, pk))
+		db.update('update `%s` set %s where %s=?' % (self.__table__, ','.join(L), pk), *args)
+		return self
+
+	def delete(self):
+		self.pre_delete and self.pre_delete()
+		pk = self.__primery_key__.name
+		args = (getattr(self, pk), )
+		db.update('delete from `%s` where `%S`=?' % (self.__table__, pk), *args)
+
+	def insert(self):
+		self.pre_insert and self.pre_insert()
+		params = {}
+		for k, v in self.__mappings__.iteritems():
+			if v.insertable:
+				if not hasattr(self, k):
+					setattr(self, k, v.default)
+					params[v.name] = getattr(self, k)
+				db.insert('%s' % self.__table__, **params)
+				return self
+
+if __name__=='__main__':
+	logging.basicConfig(level=logging.DEBUG)
+	db.create_engine('www-data', 'www-data', 'test')
+	db.update('drop table if exists user')
+	db.update('create table user (id int primary key, name text, email text, passwd text, last_modified real)')
+	import doctest
+	doctest.testmod()
+
+
+
+
+
+
+
+
