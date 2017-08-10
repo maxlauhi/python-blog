@@ -59,7 +59,7 @@ class _LasyConnection(object):
     def cleanup(self):
     	if self.connection:
     		connection = self.connection
-    		logging.info('close connetion <%s>...' % hex(id(connection)))
+    		logging.info('close connection <%s>...' % hex(id(connection)))
     		connection.close()
 
 # 持有数据库连接的上下文对象：
@@ -287,7 +287,7 @@ def update(sql, *args):
 
 if __name__=='__main__':
 	logging.basicConfig(level=logging.DEBUG)
-	create_engine('www-data', 'www-data', 'test')
+	create_engine('root', 'B@1utiful', 'test')
 	update('drop table if exists user')
 	update('create table user (id int primary key, name text, email text, passwd text, last_modified real)')
 	import doctest
