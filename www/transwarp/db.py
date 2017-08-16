@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #coding:utf-8
-
 import time, uuid, functools, threading, logging
+
 
 class Dict(dict):
 	'''
@@ -56,11 +56,11 @@ class _LasyConnection(object):
 	def rollback(self):
 		self.connection.rollback()
 
-    def cleanup(self):
-    	if self.connection:
-    		connection = self.connection
-    		logging.info('close connection <%s>...' % hex(id(connection)))
-    		connection.close()
+	def cleanup(self):
+		if self.connection:
+			connection = self.connection
+			logging.info('close connection <%s>...' % hex(id(connection)))
+			connection.close()
 
 # 持有数据库连接的上下文对象：
 class _DbCtx(threading.local):
@@ -108,11 +108,11 @@ def create_engine(user, password, database, host='127.0.0.1', port=3306, **kw):
 	defaults = dict(use_unicode=True, charset='utf8', collation='utf8_general_ci', autocommit=False)
 	for k, v in defaults.iteritems():
 		params[k] = kw.pop(k, v)
-    params.update(kw)
-    params['buffered'] = True
-    engine = _Engine(lambda: mysql.connector.connect(**params))
-    # test connection...
-    logging.info('Init mysql engine <%s> ok.' % hex(id(engine)))
+	params.update(kw)
+	params['buffered'] = True
+	engine = _Engine(lambda: mysql.connector.connect(**params))
+	# test connection...
+	logging.info('Init mysql engine <%s> ok.' % hex(id(engine)))
 
 
 # 自动获取和释放连接
@@ -150,40 +150,40 @@ class _TransactionCtx(object):
 		if not _db_ctx.if_init():
 			_db_ctx.init()
 			self.should_close_conn = True
-        _db_ctx.transactions = _db_ctx.transactions + 1
-        logging.info('begin transaction...' if _db_ctx.transactions==1 else 'join current transaction...')
-        return self
+		_db_ctx.transactions = _db_ctx.transactions + 1
+		logging.info('begin transaction...' if _db_ctx.transactions==1 else 'join current transaction...')
+		return self
 
-    def __exit__(self, exctype, excvalue, traceback):
-    	global _db_ctx
-    	_db_ctx.transactions = _db_ctx.transactions - 1
-    	try:
-    		if _db_ctx.transactions==0:
-    			if exctype is None:
-    				self.commit()
-    			else:
-    				self.rollback()
-    	finally:
-    		if self.should_close_conn:
-    			_db_ctx.cleanup()
+	def __exit__(self, exctype, excvalue, traceback):
+		global _db_ctx
+		_db_ctx.transactions = _db_ctx.transactions - 1
+		try:
+			if _db_ctx.transactions==0:
+				if exctype is None:
+					self.commit()
+				else:
+					self.rollback()
+		finally:
+			if self.should_close_conn:
+				_db_ctx.cleanup()
 
-    def commit(self):
-    	global _db_ctx
-    	logging.info('commit transaction...')
-    	try:
-    		_db_ctx.connection.commit()
-    		logging.info('commit ok.')
-    	except:
-    		logging.warning('commit failed. try rollback...')
-    		_db_ctx.connection.rollbac()
-    		logging.info('rollback ok.')
-    		raise
+	def commit(self):
+		global _db_ctx
+		logging.info('commit transaction...')
+		try:
+			_db_ctx.connection.commit()
+			logging.info('commit ok.')
+		except:
+			logging.warning('commit failed. try rollback...')
+			_db_ctx.connection.rollbac()
+			logging.info('rollback ok.')
+			raise
 
-    def rollback(self):
-    	global _db_ctx
-    	logging.info('rollback transaction...')
-    	_db_ctx.connection.rollback()
-    	logging.info('rollback ok.')
+	def rollback(self):
+		global _db_ctx
+		logging.info('rollback transaction...')
+		_db_ctx.connection.rollback()
+		logging.info('rollback ok.')
 
 def transaction():
 	'''
@@ -199,7 +199,7 @@ def with_transaction(func):
 	def _wrapper(*args, **kw):
 		_start = time.time()
 		with _TransactionCtx():
-			return func(**args, **kw)
+			return func(*args, **kw)
 		_profiling(_start)
 	return _wrapper
 
@@ -238,7 +238,7 @@ def select_one(sql, *args):
 @with_connection
 def select_int(sql, *args):
 	'''
-    Execute select SQL and expected one int and only one int result.
+	Execute select SQL and expected one int and only one int result.
 	'''
 	d = _select(sql, True, *args)
 	if len(d)!=1:
@@ -275,9 +275,9 @@ def insert(table, **kw):
 	'''
 	Execute insert SQL.
 	'''
-	cols, args = zip(**kw.iteritems())
+	cols, args = zip(*kw.iteritems())
 	sql = 'insert into `%s` (%s) values (%s)' % (table, ','.join(['`%s`' % col for col in cols]), ','.join(['?' for i in range(len(cols))]))
-    return _update(sql, *args)
+	return _update(sql, *args)
 
 def update(sql, *args):
 	'''

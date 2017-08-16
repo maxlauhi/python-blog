@@ -176,7 +176,7 @@ class Model(dict):
 		Get by primary key.
 		'''
 		d = db.select_one('select * from %s where %s=?' % (cls,__table__, cls.__primery_key__.name), pk)
-		return cls(***d) if d else None
+		return cls(**d) if d else None
 
 	@classmethod
 	def find_first(cls, where, *args):
@@ -185,7 +185,7 @@ class Model(dict):
 		only the first one returned. If no result found, return None.
 		'''
 		d = db.select_one('select * from %s %s' % (cls.__table__, where), *args)
-		return cls(***d) if d else None
+		return cls(**d) if d else None
 
 	@classmethod
 	def find_all(cls, *args):
@@ -193,7 +193,7 @@ class Model(dict):
 		Find all and return list.
 		'''
 		L = db.select('select * from `%s`' % cls.__table__)
-		return [cls(***d) for d in L]
+		return [cls(**d) for d in L]
 
 	@classmethod
 	def find_by(cls, where, *args):
@@ -201,7 +201,7 @@ class Model(dict):
 		Find by where clause and return lsit.
 		'''
 		L = db.select('select * from `%s` %s' % (cls.__table__, where), *args)
-		return [cls(***d) for d in L]
+		return [cls(**d) for d in L]
 
 	@classmethod
 	def count_all(cls):
@@ -254,7 +254,7 @@ class Model(dict):
 
 if __name__=='__main__':
 	logging.basicConfig(level=logging.DEBUG)
-	db.create_engine('www-data', 'www-data', 'test')
+	db.create_engine('root', 'B@1utiful', 'test')
 	db.update('drop table if exists user')
 	db.update('create table user (id int primary key, name text, email text, passwd text, last_modified real)')
 	import doctest

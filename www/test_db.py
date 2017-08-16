@@ -4,9 +4,9 @@ from models import User, Blog, Comment
 
 from transwarp import db
 
-db.create_engine(user='www-data', password='www-data', database='awesome')
+db.create_engine(user='root', password='B@1utiful', database='test')
 
-u = User(name='test', email='z04jr128@qq.com', password='O3to2@r', image='about:blank')
+u = User(name='max', email='z04jr128@qq.com', password='O3to2@r', image='about:blank')
 
 u.insert()
 
