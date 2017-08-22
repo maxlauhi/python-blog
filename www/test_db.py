@@ -6,7 +6,7 @@ from transwarp import db
 
 
 
-db.create_engine(user='root', password='B@1utiful', database='awesome')
+db.create_engine(user='www-data', password='www-data', database='awesome')
 
 u = User(name='max', email='z04jr128@qq.com', password='O3to2@r', image='about:blank')
 
