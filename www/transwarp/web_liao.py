@@ -1089,14 +1089,7 @@ class Template(object):
 
     def __init__(self, template_name, **kw):
         '''
-        Init a template object with template name, model as dict, and additional kw that will append to model.
-        >>> t = Template('hello.html', title='Hello', copyright='@2012')
-        >>> t.model['title']
-        'Hello'
-        >>> t.model['copyright']
-        '@2012'
-        >>> t = Template('test.html', abc=u'ABC', xyz=u'XYZ')
-        >>> t.model['abc']
+        Init a template object with template name, model as dict, and additional kw that will append to model.odel['abc']
         u'ABC'
         '''
         self.template_name = template_name
@@ -1113,11 +1106,6 @@ class Jinja2TemplateEngine(TemplateEngine):
 
     '''
     Render using jinja2 template engine.
-    >>> templ_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'test')
-    >>> engine = Jinja2TemplateEngine(templ_path)
-    >>> engine.add_filter('datetime', lambda dt: dt.strftime('%Y-%m-%d %H:%M:%S'))
-    >>> engine('jinja2-test.html', dict(name='Michael', posted_at=datetime.datetime(2014, 6, 1, 10, 11, 12)))
-    '<p>Hello, Michael.</p><span>2014-06-01 10:11:12</span>'
     '''
 
     def __init__(self, templ_dir, **kw):
@@ -1148,21 +1136,6 @@ def _default_error_handler(e, start_response, is_debug):
 def view(path):
     '''
     A view decorator that render a view by dict.
-    >>> @view('test/view.html')
-    ... def hello():
-    ...     return dict(name='Bob')
-    >>> t = hello()
-    >>> isinstance(t, Template)
-    True
-    >>> t.template_name
-    'test/view.html'
-    >>> @view('test/view.html')
-    ... def hello2():
-    ...     return ['a list']
-    >>> t = hello2()
-    Traceback (most recent call last):
-      ...
-    ValueError: Expect return a dict when using @view() decorator.
     '''
     def _decorator(func):
         @functools.wraps(func)
@@ -1210,44 +1183,6 @@ def _build_interceptor_fn(func, next):
 def _build_interceptor_chain(last_fn, *interceptors):
     '''
     Build interceptor chain.
-    >>> def target():
-    ...     print 'target'
-    ...     return 123
-    >>> @interceptor('/')
-    ... def f1(next):
-    ...     print 'before f1()'
-    ...     return next()
-    >>> @interceptor('/test/')
-    ... def f2(next):
-    ...     print 'before f2()'
-    ...     try:
-    ...         return next()
-    ...     finally:
-    ...         print 'after f2()'
-    >>> @interceptor('/')
-    ... def f3(next):
-    ...     print 'before f3()'
-    ...     try:
-    ...         return next()
-    ...     finally:
-    ...         print 'after f3()'
-    >>> chain = _build_interceptor_chain(target, f1, f2, f3)
-    >>> ctx.request = Dict(path_info='/test/abc')
-    >>> chain()
-    before f1()
-    before f2()
-    before f3()
-    target
-    after f3()
-    after f2()
-    123
-    >>> ctx.request = Dict(path_info='/api/')
-    >>> chain()
-    before f1()
-    before f3()
-    target
-    after f3()
-    123
     '''
     L = list(interceptors)
     L.reverse()
