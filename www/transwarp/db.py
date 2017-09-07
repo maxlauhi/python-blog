@@ -54,12 +54,8 @@ class DBError(Exception):
     pass
 
 
-
-
 class MultiColumnsError(DBError):
     pass
-
-
 
 
 class _LasyConnection(object):
